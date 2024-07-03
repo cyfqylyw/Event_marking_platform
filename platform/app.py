@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, make_response
 import sqlite3
 import json
-from utils import draw_fig2
+from utils import draw_fig3
 
 app = Flask(__name__)
 
@@ -74,7 +74,7 @@ def read_data():
 
     # save temp fig
     img_path = temp_img_prefix + user_id + "+" + str(data_id) + ".png"
-    draw_fig2(data, img_path)
+    draw_fig3(data, img_path)
 
     # triple
     data_id = data["id"]
