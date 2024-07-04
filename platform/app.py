@@ -5,7 +5,7 @@ from utils import draw_fig3
 
 app = Flask(__name__)
 
-db_name = "../data/mev.db"
+db_name = "../data/dbs/mev.db"
 temp_img_prefix = "temp_img/"
 
 
@@ -126,16 +126,17 @@ def save_data():
         edges_lst.append([x, direction, y])
 
     df_nodes_attributes = inputs["df_nodes_attributes"]
+    df_nodes_attributes_not_show = inputs["df_nodes_attributes_not_show"]
     df_nodes_events = inputs["df_nodes_events"]
     nodes_dict = {}
     for node_id in df_nodes_attributes["node_id"].values():
         nodes_dict[node_id] = {
             "event": df_nodes_events["event"][node_id],
-            "prev_nodes": df_nodes_attributes["prev_nodes"][node_id],
+            "prev_nodes": df_nodes_attributes_not_show["prev_nodes"][node_id],
             "is_break": df_nodes_attributes["is_break"][node_id],
             "is_observed": df_nodes_attributes["is_observed"][node_id],
             "branch": df_nodes_attributes["branch"][node_id],
-            "can_break": df_nodes_attributes["can_break"][node_id],
+            "can_break": df_nodes_attributes_not_show["can_break"][node_id],
             "type": df_nodes_attributes["type"][node_id],
         }
 
@@ -161,5 +162,5 @@ def save_data():
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5321, debug=True)
-    # app.run(host="127.0.0.1", port=5321, debug=True)
+    # app.run(host='0.0.0.0', port=5321, debug=True)
+    app.run(host="127.0.0.1", port=5321, debug=True)

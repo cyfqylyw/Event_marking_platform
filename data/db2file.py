@@ -3,8 +3,8 @@ import json
 import pdb
 import argparse
 
-db_name = 'mev.db'
-output_file_name = 'output_dataset.jsonl'
+db_name = '../data/dbs/mev.db'
+output_file_name = '../data/out/output_dataset.json'
 
 connection = sqlite3.connect(db_name)
 with connection:
@@ -22,5 +22,5 @@ with connection:
         data['is_annotated'] = is_annotated
         results.append(data)
 
-    with open(output_file_name, 'w') as f:
-        [f.write(json.dumps(d)+'\n') for d in results]
+    with open(output_file_name, 'w') as json_file:
+        json.dump(results, json_file, indent=4)

@@ -3,9 +3,8 @@ import pdb
 import random
 import sqlite3
 
-
-db_name = 'mev.db'
-file_name = 'dataset_0625_30.json'
+db_name = '../data/dbs/mev.db'
+file_name = '../data/files/dataset_0625_30.json'
 
 
 usernames_passwords = [
@@ -20,7 +19,6 @@ usernames_passwords = [
     ("Newton", "748291"),
     ("Curie", "374829")
 ]
-
 num_annotators = len(usernames_passwords)
 
 connection = sqlite3.connect(db_name)
