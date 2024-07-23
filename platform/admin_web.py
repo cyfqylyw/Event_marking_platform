@@ -76,7 +76,7 @@ def save_uploaded_file(username, password, file):
                     cursor.execute("INSERT INTO users (id, username, password) VALUES (?, ?, ?)", (user_id, username, pswd))
 
                 # 创建标注数据表
-                cursor.execute("CREATE TABLE IF NOT EXISTS annotations (id TEXT PRIMARY KEY, user_id INTEGER, data TEXT, is_annotated BOOL, FOREIGN KEY(user_id) REFERENCES users(id))")
+                cursor.execute("CREATE TABLE IF NOT EXISTS annotations (id TEXT PRIMARY KEY, user_id INTEGER, data TEXT, is_annotated BOOL, data_status TEXT, FOREIGN KEY(user_id) REFERENCES users(id))")
 
                 with open(file_save_path, 'r') as file: 
                     # 将 file_save_path 读取到一个 list
@@ -85,7 +85,9 @@ def save_uploaded_file(username, password, file):
                         data_id = data['id']
                         user_id = data_id % num_annotators
                         is_annotated = 0
-                        cursor.execute("INSERT INTO annotations (id, user_id, data, is_annotated) VALUES (?, ?, ?, ?)", (data_id, user_id, json.dumps(data), is_annotated))
+                        data_status = 'TODO'
+
+                        cursor.execute("INSERT INTO annotations (id, user_id, data, is_annotated, data_status) VALUES (?, ?, ?, ?, ?)", (data_id, user_id, json.dumps(data), is_annotated, data_status))
                     cursor.execute(f"SELECT COUNT(*) FROM annotations")
                     rows_count = cursor.fetchone()[0]
 
@@ -118,6 +120,8 @@ def download_output(username, password):
                 data = json.loads(out[2])
                 is_annotated = out[3]
                 data['is_annotated'] = is_annotated
+                data_status = out[4]
+                data['data_status'] = data_status
                 results.append(data)
 
             with open(output_file_name, 'w') as json_file:
@@ -126,7 +130,6 @@ def download_output(username, password):
         return output_file_name, "导出成功"
     else:
         return None, "管理员用户名和密码错误"
-
 
 
 with gr.Blocks() as demo:
@@ -169,5 +172,5 @@ with gr.Blocks() as demo:
                           )
 
 
-# demo.launch(server_name='0.0.0.0', server_port=5320)
-demo.launch(server_name='127.0.0.1', server_port=5320)
+# demo.launch(server_name='0.0.0.0', server_port=5320, root_path='/event_admin')
+demo.launch(server_name='127.0.0.1', server_port=5320, root_path='/event_admin')
