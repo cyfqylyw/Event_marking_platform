@@ -42,7 +42,7 @@ with connection:
         cursor.execute("INSERT INTO users (id, username, password) VALUES (?, ?, ?)", (user_id, username, pswd))
     
     # 创建标注数据表
-    cursor.execute("CREATE TABLE IF NOT EXISTS annotations (id TEXT PRIMARY KEY, user_id INTEGER, data TEXT, is_annotated BOOL, FOREIGN KEY(user_id) REFERENCES users(id))")
+    cursor.execute("CREATE TABLE IF NOT EXISTS annotations (id TEXT PRIMARY KEY, user_id INTEGER, data TEXT, is_annotated BOOL, data_status TEXT, FOREIGN KEY(user_id) REFERENCES users(id))")
 
     with open(file_name, 'r') as file: 
         # 将file_name读取到一个list
@@ -54,13 +54,14 @@ with connection:
             data_id = data['id']
             user_id = data_id % num_annotators
             is_annotated = 0
+            data_status = 'TODO'
 
             # nodes = data['nodes']
             # edges = data['edges']
             # direction = data['direction']
             # topic = data['topic']
             
-            cursor.execute("INSERT INTO annotations (id, user_id, data, is_annotated) VALUES (?, ?, ?, ?)", (data_id, user_id, json.dumps(data), is_annotated))
+            cursor.execute("INSERT INTO annotations (id, user_id, data, is_annotated, data_status) VALUES (?, ?, ?, ?, ?)", (data_id, user_id, json.dumps(data), is_annotated, data_status))
         
         cursor.execute(f"SELECT COUNT(*) FROM annotations")
         rows_count = cursor.fetchone()[0]
@@ -68,5 +69,3 @@ with connection:
     print(f"{file_name} to {db_name} 数据库和表创建成功！")
     print(f'Number of annotations: {rows_count}')
     
-
-
