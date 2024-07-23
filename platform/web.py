@@ -55,7 +55,8 @@ def prepare_data(user_id, data_id):
     topic = response['topic']
     img_path = response['img_path']
     is_annotated = 'Annotated' if response['is_annotated'] else 'TODO'
-    return data_id, nodes, df_nodes_attributes, df_nodes_attributes_not_show, df_nodes_events, df_edges, direction, topic, img_path, is_annotated
+    data_status = response['data_status']
+    return data_id, nodes, df_nodes_attributes, df_nodes_attributes_not_show, df_nodes_events, df_edges, direction, topic, img_path, is_annotated, data_status
 
 
 def save_annotations(user_id, data_id, df_nodes_attributes, df_nodes_attributes_not_show, df_nodes_events, df_edges_display, direction_display, topic_display):
@@ -78,12 +79,23 @@ def save_annotations(user_id, data_id, df_nodes_attributes, df_nodes_attributes_
     return prepare_data(user_id, data_id)
 
 
+def set_invalid_func(user_id, data_id):
+    to_save = {
+        'user_id': user_id,
+        'id': data_id
+    }
+    response = requests.post(f'http://{local_host}:{port}/set_invalid', json=to_save)
+    return prepare_data(user_id, data_id) 
+
+
+
 with gr.Blocks() as demo:
-    gr.Markdown('# Welcome!')
+    gr.Markdown('# Step 1: Login 登陆')
     # 登录区域
     with gr.Row():
-        username_input = gr.Textbox(label="Username")
-        password_input = gr.Textbox(label="Password", type="password")
+        # CHANGE 0715
+        username_input = gr.Textbox(label="Username", value="Leonardo")
+        password_input = gr.Textbox(label="Password", type="password", value="583920")
     with gr.Row():
         login_btn = gr.Button("Login")
         login_status = gr.Textbox(label="Login Status")
@@ -91,32 +103,36 @@ with gr.Blocks() as demo:
     user_id = gr.Textbox(visible=False)
     data_id = gr.Textbox(visible=False)
 
+
+    gr.Markdown('# Step 2.1: Choose data 选择数据')
     # 选择 data_id
     select_button = gr.Radio([], label='Choose your data')
 
-    gr.Markdown('# Sample meta information (DO NOT CHANGE)')
+    gr.Markdown('# Step 2.2: Meta information (DO NOT CHANGE)  查看元信息（无需标注）')
     topic_display = gr.Textbox(label='Topic')
-    direction_display = gr.Textbox(label='Direction')
-    save_status = gr.Textbox(label='Save status')
+    direction_display = gr.Textbox(label='Direction (cause / result)')
+    save_status = gr.Textbox(label='Save status (TODO / Annotated)')
+    data_status = gr.Textbox(label='Data status (TODO / Valid / Invalid)')
 
     
-    gr.Markdown('# Graph meta information')
+    gr.Markdown('# Step 3: Graph information 图的点和边信息（需要标注）')
     with gr.Row():
         with gr.Column(scale=10):
-            gr.Markdown('## Node attributes')
+            gr.Markdown('## Node attributes 节点属性')
             df_nodes_attributes = gr.Dataframe(interactive=True)
             df_nodes_attributes_not_show = gr.DataFrame(visible=False)
         with gr.Column(scale=1):
-            gr.Markdown('## Edges')
+            gr.Markdown('## Edges 边 （关系在2.2 direction中）')
             df_edges_display = gr.Dataframe(interactive=True)
 
     img_path = gr.Textbox(visible=False)
     nodes_display = gr.Textbox(visible=False)
     # edges_display = gr.Textbox(visible=False)
 
+    gr.Markdown('# Step 4: Event information 事件信息（需要标注）')
     with gr.Row():
         with gr.Column(scale=5):
-            gr.Markdown('# Graph')
+            gr.Markdown('# Graph 简单图示（无需标注）')
             gr.Markdown('## 如果觉得图不容易看，可以点击reload来重新绘图')
             image_display = gr.Image(label='Graph display') # 显示图片
         with gr.Column(scale=7):
@@ -125,7 +141,9 @@ with gr.Blocks() as demo:
     
 
     reload_information_btn = gr.Button("Reload (放弃当前所有修改，回退到上一次保存的状态)")
-    save_annotation_btn = gr.Button("Submit (根据已有修改更新数据库，不可逆)")
+    set_invalid_btn = gr.Button("Set Invalid (由于数据质量过低，完全无法标注，将其标记为invalid状态)")
+    save_annotation_btn = gr.Button("Submit (根据已有修改/标注信息来更新数据库，不可回退)")
+
 
 
     # 设置按钮点击后的动作
@@ -135,20 +153,24 @@ with gr.Blocks() as demo:
     
     select_button.change(fn=prepare_data,
                          inputs=[user_id, select_button],
-                         outputs=[data_id, nodes_display, df_nodes_attributes, df_nodes_attributes_not_show,df_nodes_events, df_edges_display, direction_display, topic_display, image_display, save_status]
+                         outputs=[data_id, nodes_display, df_nodes_attributes, df_nodes_attributes_not_show,df_nodes_events, df_edges_display, direction_display, topic_display, image_display, save_status, data_status]
                          )
     
     
     reload_information_btn.click(fn=prepare_data,
                                  inputs=[user_id, select_button],
-                                 outputs=[data_id, nodes_display, df_nodes_attributes, df_nodes_attributes_not_show,df_nodes_events, df_edges_display, direction_display, topic_display, image_display, save_status]
+                                 outputs=[data_id, nodes_display, df_nodes_attributes, df_nodes_attributes_not_show,df_nodes_events, df_edges_display, direction_display, topic_display, image_display, save_status, data_status]
                                 )
 
     save_annotation_btn.click(fn=save_annotations,
                               inputs=[user_id, data_id, df_nodes_attributes, df_nodes_attributes_not_show, df_nodes_events, df_edges_display, direction_display, topic_display],
-                              outputs=[data_id, nodes_display, df_nodes_attributes, df_nodes_attributes_not_show,df_nodes_events, df_edges_display, direction_display, topic_display, image_display, save_status])
+                              outputs=[data_id, nodes_display, df_nodes_attributes, df_nodes_attributes_not_show,df_nodes_events, df_edges_display, direction_display, topic_display, image_display, save_status, data_status])
+    
+    set_invalid_btn.click(fn=set_invalid_func,
+                          inputs=[user_id, data_id],
+                          outputs=[data_id, nodes_display, df_nodes_attributes, df_nodes_attributes_not_show,df_nodes_events, df_edges_display, direction_display, topic_display, image_display, save_status, data_status])
 
 
 
-# demo.launch(server_name='0.0.0.0', server_port=5322)
-demo.launch(server_name='127.0.0.1', server_port=5322)
+# demo.launch(server_name='0.0.0.0', server_port=5322, root_path='/event')
+demo.launch(server_name='127.0.0.1', server_port=5322, root_path='/event')
