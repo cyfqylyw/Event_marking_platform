@@ -118,11 +118,11 @@ with gr.Blocks() as demo:
     gr.Markdown('# Step 3: Graph information 图的点和边信息（需要标注）')
     with gr.Row():
         with gr.Column(scale=10):
-            gr.Markdown('## Node attributes 节点属性')
+            gr.Markdown('## 3.1 Node attributes 节点属性')
             df_nodes_attributes = gr.Dataframe(interactive=True)
             df_nodes_attributes_not_show = gr.DataFrame(visible=False)
         with gr.Column(scale=1):
-            gr.Markdown('## Edges 边 （关系在2.2 direction中）')
+            gr.Markdown('## 3.2 Edges 边')
             df_edges_display = gr.Dataframe(interactive=True)
 
     img_path = gr.Textbox(visible=False)
@@ -132,11 +132,11 @@ with gr.Blocks() as demo:
     gr.Markdown('# Step 4: Event information 事件信息（需要标注）')
     with gr.Row():
         with gr.Column(scale=5):
-            gr.Markdown('# Graph 简单图示（无需标注）')
+            gr.Markdown('## 4.1 Graph 简单图示（无需标注）')
             gr.Markdown('## 如果觉得图不容易看，可以点击reload来重新绘图')
             image_display = gr.Image(label='Graph display') # 显示图片
         with gr.Column(scale=7):
-            gr.Markdown('# Node event content')
+            gr.Markdown('## 4.2 Node (event) content 事件（需要标注）')
             df_nodes_events = gr.Dataframe(interactive=True)
     
 
