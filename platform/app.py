@@ -14,14 +14,17 @@ def search_by_userid_and_dataid(user_id, data_id):
     connection = sqlite3.connect(db_name)
     cursor = connection.cursor()
     cursor.execute(
-        f"SELECT data, is_annotated FROM annotations WHERE user_id={user_id} AND id='{data_id}'"
+        # CHANGE 0715
+        # f"SELECT data, is_annotated, data_status FROM annotations WHERE user_id={user_id} AND id='{data_id}'"
+        f"SELECT data, is_annotated, data_status FROM annotations WHERE id='{data_id}'"
     )
     connection.commit()
     outputs = cursor.fetchall()[0]
     data = json.loads(outputs[0])
     is_annotated = outputs[1]
+    data_status = outputs[2]
     connection.close()
-    return data, is_annotated
+    return data, is_annotated, data_status
 
 
 @app.route("/login", methods=["POST"])
@@ -52,7 +55,9 @@ def search_data_ids():
     connection = sqlite3.connect(db_name)
     cursor = connection.cursor()
 
-    cursor.execute(f"SELECT id FROM annotations WHERE user_id={user_id}")
+    # CHANGE 0715
+    # cursor.execute(f"SELECT id FROM annotations WHERE user_id={user_id}")
+    cursor.execute(f"SELECT id FROM annotations")
     connection.commit()
 
     data_ids = [d[0] for d in cursor.fetchall()]
@@ -67,7 +72,7 @@ def read_data():
     user_id = inputs["user_id"]
     data_id = inputs["data_id"]
 
-    data, is_annotated = search_by_userid_and_dataid(user_id, data_id)
+    data, is_annotated, data_status = search_by_userid_and_dataid(user_id, data_id)
 
     # id
     data_id = data["id"]
@@ -105,6 +110,7 @@ def read_data():
                 "topic": topic,
                 "img_path": img_path,
                 "is_annotated": is_annotated,
+                "data_status": data_status
             }
         ),
         200,
@@ -150,15 +156,46 @@ def save_data():
 
     data_str = json.dumps(data)
     is_annotated = 1
+    data_status = "Valid"
     connection = sqlite3.connect(db_name)
     cursor = connection.cursor()
-    sql_update_query = "UPDATE annotations SET data = ?, is_annotated = ? WHERE user_id = ? AND id = ?;"
-    params = (data_str, is_annotated, user_id, data_id)
+    # CHANGE 0715
+    # sql_update_query = "UPDATE annotations SET data = ?, is_annotated = ?, data_status = ? WHERE user_id = ? AND id = ?;"
+    # params = (data_str, is_annotated, data_status, user_id, data_id)
+    sql_update_query = "UPDATE annotations SET data = ?, is_annotated = ?, data_status = ? WHERE id = ?;"
+    params = (data_str, is_annotated, data_status, data_id)
 
     cursor.execute(sql_update_query, params)
     connection.commit()
     connection.close()
     return jsonify({"message": "成功", "is_annotated": is_annotated}), 200
+
+
+@app.route("/set_invalid", methods=["POST"])
+def set_invalid():
+    inputs = request.json
+
+    user_id = inputs["user_id"]
+    data_id = inputs["id"]
+
+    is_annotated = 1
+    data_status = "Invalid"
+
+    data, _, _ = search_by_userid_and_dataid(user_id, data_id)
+    data_str = json.dumps(data)
+
+    connection = sqlite3.connect(db_name)
+    cursor = connection.cursor()
+    # CHANGE 0715
+    # sql_update_query = "UPDATE annotations SET data = ?, is_annotated = ?, data_status = ? WHERE user_id = ? AND id = ?;"
+    # params = (data_str, is_annotated, data_status, user_id, data_id)
+    sql_update_query = "UPDATE annotations SET data = ?, is_annotated = ?, data_status = ? WHERE id = ?;"
+    params = (data_str, is_annotated, data_status, data_id)
+
+    cursor.execute(sql_update_query, params)
+    connection.commit()
+    connection.close()
+    return jsonify({"message": "成功", "is_annotated": is_annotated, "data_status": data_status}), 200
 
 
 if __name__ == "__main__":
