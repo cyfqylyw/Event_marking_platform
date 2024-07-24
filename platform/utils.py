@@ -16,7 +16,8 @@ def draw_fig3(raw_data, filename):
     for head, rel, tail in edges:
         G.add_edge(head, tail, rel=rel[0])
 
-    pos = nx.spring_layout(G)
+    # pos = nx.spring_layout(G)
+    pos = nx.drawing.nx_pydot.graphviz_layout(G, root=0)
     branch_colors = {}
     colors = ['skyblue', 'lightgreen', 'salmon', 'gold', 'violet', 'lightgrey', 'orange', 'cyan']
     for node, data in G.nodes(data=True):
@@ -52,7 +53,7 @@ def draw_fig3(raw_data, filename):
     # Add dashed circles for unobserved nodes
     for node, data in G.nodes(data=True):
         if not data.get('is_observed', True):  # for unobserved nodes
-            circle = plt.Circle(pos[node], radius=0.05, edgecolor='black', facecolor='none', linestyle='--', linewidth=2)
+            circle = plt.Circle(pos[node], radius=0.08, edgecolor='black', facecolor='none', linestyle='--', linewidth=2)
             ax.add_artist(circle)
 
     # Draw node labels
