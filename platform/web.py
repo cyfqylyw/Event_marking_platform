@@ -133,13 +133,12 @@ with gr.Blocks() as demo:
     with gr.Row():
         with gr.Column(scale=5):
             gr.Markdown('## 4.1 Graph 简单图示（无需标注）')
-            gr.Markdown('## 如果觉得图不容易看，可以点击reload来重新绘图')
             image_display = gr.Image(label='Graph display') # 显示图片
         with gr.Column(scale=7):
             gr.Markdown('## 4.2 Node (event) content 事件（需要标注）')
             df_nodes_events = gr.Dataframe(interactive=True)
     
-
+    gr.Markdown('# Step 5: 提交修改')
     reload_information_btn = gr.Button("Reload (放弃当前所有修改，回退到上一次保存的状态)")
     set_invalid_btn = gr.Button("Set Invalid (由于数据质量过低，完全无法标注，将其标记为invalid状态)")
     save_annotation_btn = gr.Button("Submit (根据已有修改/标注信息来更新数据库，不可回退)")
@@ -172,5 +171,5 @@ with gr.Blocks() as demo:
 
 
 
-# demo.launch(server_name='0.0.0.0', server_port=5322, root_path='/event')
-demo.launch(server_name='127.0.0.1', server_port=5322, root_path='/event')
+demo.launch(server_name='0.0.0.0', server_port=5322, root_path='/event')
+# demo.launch(server_name='127.0.0.1', server_port=5322, root_path='/event')
